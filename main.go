@@ -2,6 +2,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"log"
+)
+
+const (
+	err_candidate_not_found = "Candidate not found"
 )
 
 type candidate struct {
@@ -10,7 +16,9 @@ type candidate struct {
 	source   bool
 }
 
-var global_ranking global_ranks
+type global_ranks map[voter_name]voter_ranks
+
+var global_ranking = global_ranks{}
 
 var candidates = [3]candidate{
 	{name: "Miko", strength: 0, source: false},
@@ -26,8 +34,6 @@ type voters struct {
 	votes voter_ranks
 }
 
-type global_ranks map[voter_name]voter_ranks
-
 // Voters struct has access to all the candiates voter voted for, it checks if their is an entry for
 // for the voter in the global_rankings, if not - then adds the voters list to the global ranking.
 // Otherwise returns an error
@@ -36,6 +42,8 @@ func (v voters) record_preferences() error {
 	if voted {
 		return errors.New("Voter voted")
 	}
+	// fmt.Println(v.votes)
+	fmt.Println(v.votes)
 	global_ranking[v.name] = v.votes
 	return nil
 }
@@ -44,20 +52,39 @@ func (v voters) record_preferences() error {
 // checks if the voted candidate is running in the election, if not - returns an error,
 // otherwise adds voted to v.voters and records the it a global map to keep strack of it
 func (v *voters) vote(voted voter_ranks) error {
-	for index, candidate := range voted {
-		if candidate != candidates[index].name {
-			return errors.New("Candidates not found")
-		}
+	for _, candidate := range candidates {
+		true_candidate_check(candidate.name, voted)
 	}
 	v.votes = voted
 	v.record_preferences()
+	fmt.Println(global_ranking)
+
 	return nil
 }
 
 // }}}
 
-func main() {
+//Helper functions
 
+// Loops through vouter_ranks and checks if all the votes are for true candidates
+func true_candidate_check(find string, slice voter_ranks) (truthy bool) {
+	maps := make(map[string]bool)
+	for _, value := range slice {
+		maps[value] = false
+	}
+	_, truthy = maps[find]
+	if truthy == false {
+		log.Fatalln(err_candidate_not_found, find)
+	}
+	return truthy
+}
+
+func main() {
+	voter1 := voters{"john", voter_ranks{}}
+	err := voter1.vote(voter_ranks{"Miko", "Luk", "Inari"})
+	if err != nil {
+		log.Fatal(err_candidate_not_found)
+	}
 }
 
 /*
