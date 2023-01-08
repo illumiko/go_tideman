@@ -13,22 +13,20 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +59 main.go
+badd +18 main.go
 badd +11 ~/Documents/Projects/Course/go/go_by_ttd/07_dependency_injection/dependency_test.go
-badd +8 ~/Documents/Projects/Learning/go/tideman/main_test.go
+badd +42 main_test.go
 argglobal
 %argdel
-edit main.go
+tabnew +setlocal\ bufhidden=wipe
+tabrewind
+edit main_test.go
 let s:save_splitbelow = &splitbelow
 let s:save_splitright = &splitright
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
 1wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
 wincmd w
 let &splitbelow = s:save_splitbelow
 let &splitright = s:save_splitright
@@ -41,6 +39,7 @@ set winminwidth=0
 set winwidth=1
 wincmd =
 argglobal
+balt main.go
 setlocal fdm=marker
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -49,20 +48,21 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-29
+22
 normal! zo
-let s:l = 59 - ((15 * winheight(0) + 10) / 20)
+let s:l = 42 - ((28 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 59
-normal! 024|
+keepjumps 42
+normal! 021|
 wincmd w
 argglobal
-if bufexists(fnamemodify("~/Documents/Projects/Learning/go/tideman/main_test.go", ":p")) | buffer ~/Documents/Projects/Learning/go/tideman/main_test.go | else | edit ~/Documents/Projects/Learning/go/tideman/main_test.go | endif
+if bufexists(fnamemodify("main.go", ":p")) | buffer main.go | else | edit main.go | endif
 if &buftype ==# 'terminal'
-  silent file ~/Documents/Projects/Learning/go/tideman/main_test.go
+  silent file main.go
 endif
+balt ~/Documents/Projects/Course/go/go_by_ttd/07_dependency_injection/dependency_test.go
 setlocal fdm=marker
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -71,35 +71,39 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal fen
-let s:l = 9 - ((2 * winheight(0) + 3) / 6)
+43
+normal! zo
+let s:l = 18 - ((5 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 9
-normal! 048|
+keepjumps 18
+normal! 04|
 wincmd w
-argglobal
-if bufexists(fnamemodify("~/Documents/Projects/Course/go/go_by_ttd/07_dependency_injection/dependency_test.go", ":p")) | buffer ~/Documents/Projects/Course/go/go_by_ttd/07_dependency_injection/dependency_test.go | else | edit ~/Documents/Projects/Course/go/go_by_ttd/07_dependency_injection/dependency_test.go | endif
-if &buftype ==# 'terminal'
-  silent file ~/Documents/Projects/Course/go/go_by_ttd/07_dependency_injection/dependency_test.go
-endif
-setlocal fdm=marker
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-let s:l = 13 - ((12 * winheight(0) + 13) / 27)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 13
-normal! 0
-wincmd w
-3wincmd w
+2wincmd w
 wincmd =
+tabnext
+edit ~/Documents/Projects/Testing/go/playground/main.go
+argglobal
+balt main.go
+setlocal fdm=marker
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+147
+normal! zo
+147
+normal! zc
+let s:l = 212 - ((156 * winheight(0) + 15) / 31)
+if s:l < 1 | let s:l = 1 | endif
+keepjumps exe s:l
+normal! zt
+keepjumps 212
+normal! 0
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
@@ -107,8 +111,6 @@ endif
 unlet! s:wipebuf
 set winheight=20 winwidth=110
 let &shortmess = s:shortmess_save
-let &winminheight = s:save_winminheight
-let &winminwidth = s:save_winminwidth
 let s:sx = expand("<sfile>:p:r")."x.vim"
 if filereadable(s:sx)
   exe "source " . fnameescape(s:sx)

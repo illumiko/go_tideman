@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -16,17 +15,32 @@ type candidate struct {
 	source   bool
 }
 
+func make_pairs(unpaired_slice []string) (pairs [][]string) {
+	for i, v := range unpaired_slice {
+		pairs_slice := unpaired_slice[i+1:]
+		if len(pairs_slice) == 0 {
+			break
+		}
+		for _, x := range pairs_slice {
+			pairs = append(pairs, []string{v, x})
+		}
+	}
+
+	return pairs
+}
+
 type global_ranks map[voter_name]voter_ranks
 
 var global_ranking = global_ranks{}
 
-var candidates = [3]candidate{
-	{name: "Miko", strength: 0, source: false},
-	{name: "Luk", strength: 0, source: false},
-	{name: "Inari", strength: 0, source: false},
-}
+//	var candidates = [3]candidate{
+//		{name: "Miko", strength: 0, source: false},
+//		{name: "Luk", strength: 0, source: false},
+//		{name: "Inari", strength: 0, source: false},
+//	}
+var candidates = [...]string{"Miko", "Luk", "Inari"}
 
-type voter_ranks [3]string // {{{
+type voter_ranks []string // {{{
 type voter_name string
 
 type voters struct {
@@ -42,8 +56,6 @@ func (v voters) record_preferences() error {
 	if voted {
 		return errors.New("Voter voted")
 	}
-	// fmt.Println(v.votes)
-	fmt.Println(v.votes)
 	global_ranking[v.name] = v.votes
 	return nil
 }
@@ -53,12 +65,10 @@ func (v voters) record_preferences() error {
 // otherwise adds voted to v.voters and records the it a global map to keep strack of it
 func (v *voters) vote(voted voter_ranks) error {
 	for _, candidate := range candidates {
-		true_candidate_check(candidate.name, voted)
+		true_candidate_check(candidate, voted)
 	}
 	v.votes = voted
 	v.record_preferences()
-	fmt.Println(global_ranking)
-
 	return nil
 }
 
@@ -80,16 +90,11 @@ func true_candidate_check(find string, slice voter_ranks) (truthy bool) {
 }
 
 func main() {
-	voter1 := voters{"john", voter_ranks{}}
-	err := voter1.vote(voter_ranks{"Miko", "Luk", "Inari"})
-	if err != nil {
-		log.Fatal(err_candidate_not_found)
-	}
 }
 
 /*
 
-//Complete the vote function.
+xx//Complete the vote function.
 
 The function takes arguments rank, name, and ranks. If name is a match for the name of a
 valid candidate, then you should update the ranks array to indicate that the voter has
@@ -100,7 +105,7 @@ the rank was successfully recorded, and false otherwise (if, for instance, name 
 of the candidates).
 You may assume that no two candidates will have the same name.
 
-//Complete the record_preferences function.
+xx//Complete the record_preferences function.
 
 The function is called once for each voter, and takes as argument the ranks array,
 (recall that ranks[i] is the voter’s ith preference, where ranks[0] is the first preference).
