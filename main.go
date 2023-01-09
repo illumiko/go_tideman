@@ -2,11 +2,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"sort"
 )
 
 const (
 	err_candidate_not_found = "Candidate not found"
+	err_record_preference   = "Preference not recorded"
 )
 
 type candidate struct {
@@ -15,30 +18,24 @@ type candidate struct {
 	source   bool
 }
 
-func make_pairs(unpaired_slice []string) (pairs [][]string) {
-	for i, v := range unpaired_slice {
-		pairs_slice := unpaired_slice[i+1:]
-		if len(pairs_slice) == 0 {
-			break
-		}
-		for _, x := range pairs_slice {
-			pairs = append(pairs, []string{v, x})
-		}
-	}
-
-	return pairs
-}
-
 type global_ranks map[voter_name]voter_ranks
 
 var global_ranking = global_ranks{}
 
-//	var candidates = [3]candidate{
-//		{name: "Miko", strength: 0, source: false},
-//		{name: "Luk", strength: 0, source: false},
-//		{name: "Inari", strength: 0, source: false},
-//	}
-var candidates = [...]string{"Miko", "Luk", "Inari"}
+var candidates = []string{"Miko", "Luk", "Inari"}
+var pair_candidates = [][]string{}
+
+func (gl global_ranks) sort_pairs() (margins map[string]int) {
+	//compares each pairs with all votes of the candidates to find the margin
+	for _, pairs := range pair_candidates {
+		for _, v := range gl {
+			fmt.Println(v, pairs, determine_margin(pairs, v))
+
+		}
+	}
+
+	return
+}
 
 type voter_ranks []string // {{{
 type voter_name string
@@ -65,10 +62,13 @@ func (v voters) record_preferences() error {
 // otherwise adds voted to v.voters and records the it a global map to keep strack of it
 func (v *voters) vote(voted voter_ranks) error {
 	for _, candidate := range candidates {
-		true_candidate_check(candidate, voted)
+		true_candidate_check(voted, candidate)
 	}
 	v.votes = voted
-	v.record_preferences()
+	err := v.record_preferences()
+	if err != nil {
+		log.Fatalln(err, err_record_preference)
+	}
 	return nil
 }
 
@@ -76,8 +76,40 @@ func (v *voters) vote(voted voter_ranks) error {
 
 //Helper functions
 
+// Compares Voters list with pair_candidates to determine margin
+func determine_margin(pairs []string, votes voter_ranks) (margin []int) {
+	for _, candidate := range pairs {
+		margin = append(margin, indexof(votes, candidate))
+	}
+
+	return margin
+}
+
+// Sorts the slice, and creates pairs from the passed slice without affecting the passed slice
+func make_pairs(unpaired_slice []string) (pairs [][]string) {
+	//Prevents changing the original slice
+	copy_slice := make([]string, len(unpaired_slice))
+	copy(copy_slice, unpaired_slice)
+
+	//sorts
+	sort.Strings(copy_slice)
+
+	//makes pairs
+	for i, v := range copy_slice {
+		pairs_slice := copy_slice[i+1:]
+		if len(pairs_slice) == 0 {
+			break
+		}
+		for _, x := range pairs_slice {
+			pairs = append(pairs, []string{v, x})
+		}
+	}
+
+	return pairs
+}
+
 // Loops through vouter_ranks and checks if all the votes are for true candidates
-func true_candidate_check(find string, slice voter_ranks) (truthy bool) {
+func true_candidate_check(slice voter_ranks, find string) (truthy bool) {
 	maps := make(map[string]bool)
 	for _, value := range slice {
 		maps[value] = false
@@ -88,8 +120,43 @@ func true_candidate_check(find string, slice voter_ranks) (truthy bool) {
 	}
 	return truthy
 }
+func indexof(slice voter_ranks, find string) (index int) {
+	maps := make(map[string]int)
+	for i, value := range slice {
+		maps[value] = i
+	}
+	index, truthy := maps[find]
+	if truthy == false {
+		log.Fatalln(err_candidate_not_found, find)
+	}
+	return index
+}
+
+func init() {
+	voter1 := voters{"John", voter_ranks{}}
+	err := voter1.vote(voter_ranks{"Luk", "Inari", "Miko"})
+	if err != nil {
+		log.Fatalln(err_candidate_not_found)
+	}
+	voter2 := voters{"Bob", voter_ranks{}}
+	err = voter2.vote(voter_ranks{"Inari", "Miko", "Luk"})
+	if err != nil {
+		log.Fatalln(err_candidate_not_found)
+	}
+
+	voter3 := voters{"Doe", voter_ranks{}}
+	err = voter3.vote(voter_ranks{"Inari", "Luk", "Miko"})
+	if err != nil {
+		log.Fatalln(err_candidate_not_found)
+	}
+
+	pair_candidates = make_pairs(candidates)
+
+	global_ranking.sort_pairs()
+}
 
 func main() {
+
 }
 
 /*
