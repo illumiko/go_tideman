@@ -12,28 +12,28 @@ const (
 	err_record_preference   = "Preference not recorded"
 )
 
-type candidate struct {
-	name     string
-	strength int
-	source   bool
-}
-
 type global_ranks map[voter_name]voter_ranks
 
 var global_ranking = global_ranks{}
 
+type win_margin map[string][][]int
+
+var win_margins = win_margin{}
+
 var candidates = []string{"Miko", "Luk", "Inari"}
 var pair_candidates = [][]string{}
 
-func (gl global_ranks) sort_pairs() (margins map[string]int) {
+func pair_preference() (margins map[string][][]int) {
+	margins = map[string][][]int{}
 	//compares each pairs with all votes of the candidates to find the margin
 	for _, pairs := range pair_candidates {
-		for _, v := range gl {
-			fmt.Println(v, pairs, determine_margin(pairs, v))
-
+		for _, v := range global_ranking {
+			margin := determine_margin(pairs, v)
+			margins[pairs[0]+pairs[1]] = append(margins[pairs[0]+pairs[1]], margin)
 		}
 	}
 
+	fmt.Println(margins)
 	return
 }
 
@@ -67,7 +67,7 @@ func (v *voters) vote(voted voter_ranks) error {
 	v.votes = voted
 	err := v.record_preferences()
 	if err != nil {
-		log.Fatalln(err, err_record_preference)
+		log.Fatalln(err_record_preference)
 	}
 	return nil
 }
@@ -152,7 +152,7 @@ func init() {
 
 	pair_candidates = make_pairs(candidates)
 
-	global_ranking.sort_pairs()
+	win_margins = pair_preference()
 }
 
 func main() {
